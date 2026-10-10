@@ -1,0 +1,27 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: verify before shipping
+        run: |
+          python -m unittest discover -s tests
+          bash test/e2e_local.sh
+      - name: build zipapp
+        run: bash scripts/build_pyz.sh
+      - name: attach to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/morgue.pyz
